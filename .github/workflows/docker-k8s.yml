@@ -35,10 +35,10 @@ jobs:
 
       - name: Deploy to Kubernetes
         run: |
-          base64 -d kubeconfig > decoded_kubeconfig
-          export KUBECONFIG=./decoded_kubeconfig
+          base64 -d kubeconfig > kubeconfig
+          export KUBECONFIG=./kubeconfig
           sed -i 's|image: .*|image: rabbyrobin/nodejs-app:${{ github.run_number }}|' k8s/deployment.yml
           kubectl apply -f k8s/deployment.yml
           kubectl apply -f k8s/service.yml
           kubectl apply -f k8s/ingress.yml
-          rm decoded_kubeconfig  # Clean up for security
+          rm kubeconfig  # Clean up for security
