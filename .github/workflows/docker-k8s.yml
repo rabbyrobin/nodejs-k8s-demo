@@ -27,11 +27,11 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/nodejs-app:${{ github.sha }}
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/nodejs-app:${{ github.run_number }}
 
       - name: Update Kubernetes manifests
         run: |
-          sed -i 's|image: .*|image: ${{ secrets.DOCKER_HUB_USERNAME }}/nodejs-app:${{ github.sha }}|' k8s/deployment.yml
+          sed -i 's|image: .*|image: ${{ secrets.DOCKER_HUB_USERNAME }}/nodejs-app:${{ github.run_number }}|' k8s/deployment.yml
 
       - name: Deploy to Kubernetes
         run: |
