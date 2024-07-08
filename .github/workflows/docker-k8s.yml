@@ -48,7 +48,7 @@ jobs:
           kubectl config view --raw
 
       - name: Use context
-        run: kubectl config use-context kubernetes-admin@kubernetes
+        run: kubectl config use-context admin@kubernetes
 
       - name: Debug cluster info
         run: |
