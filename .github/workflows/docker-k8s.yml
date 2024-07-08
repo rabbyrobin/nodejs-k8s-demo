@@ -29,22 +29,21 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/nodejs-app:${{ github.run_number }}
 
-      - name: Update Kubernetes manifests
+  deploy:
+    name: Deploy to Kubernetes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Create kubeconfig
         run: |
-          sed -i 's|image: .*|image: ${{ secrets.DOCKER_HUB_USERNAME }}/nodejs-app:${{ github.run_number }}|' k8s/deployment.yml
-
-      - name: Set up kubeconfig
-        run: |
-          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ./kubeconfig
-          chmod 600 ./kubeconfig
-          export KUBECONFIG=./kubeconfig
-
-      - name: Verify Kubernetes connection
-        run: kubectl cluster-info
-
-      - name: Deploy to Kubernetes
+          mkdir ${HOME}/.kube
+          echo ${{ secrets.KUBE_CONFIG }} | base64 --decode > ${HOME}/.kube/config
+          cat ${HOME}/.kube/config
+      - name: Use context
+        run: kubectl config use-context kubernetes-admin@kubernetes
+      - name: Deploy to K8s
         run: |
           kubectl apply -f k8s/deployment.yml
           kubectl apply -f k8s/service.yml
           kubectl apply -f k8s/ingress.yml
-          rm ./kubeconfig  # Clean up for security
