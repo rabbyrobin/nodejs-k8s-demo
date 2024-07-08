@@ -35,6 +35,7 @@ jobs:
 
       - name: Deploy to Kubernetes
         run: |
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 --decode > kubeconfig
           kubectl apply -f k8s/deployment.yml
           kubectl apply -f k8s/service.yml
           kubectl apply -f k8s/ingress.yml
