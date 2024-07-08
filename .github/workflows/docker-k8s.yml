@@ -33,12 +33,18 @@ jobs:
         run: |
           sed -i 's|image: .*|image: ${{ secrets.DOCKER_HUB_USERNAME }}/nodejs-app:${{ github.run_number }}|' k8s/deployment.yml
 
+      - name: Set up kubeconfig
+        run: |
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ./kubeconfig
+          chmod 600 ./kubeconfig
+          export KUBECONFIG=./kubeconfig
+
+      - name: Verify Kubernetes connection
+        run: kubectl cluster-info
+
       - name: Deploy to Kubernetes
         run: |
-          base64 -d kubeconfig > kubeconfig
-          export KUBECONFIG=./kubeconfig
-          sed -i 's|image: .*|image: rabbyrobin/nodejs-app:${{ github.run_number }}|' k8s/deployment.yml
           kubectl apply -f k8s/deployment.yml
           kubectl apply -f k8s/service.yml
           kubectl apply -f k8s/ingress.yml
-          rm kubeconfig  # Clean up for security
+          rm ./kubeconfig  # Clean up for security
