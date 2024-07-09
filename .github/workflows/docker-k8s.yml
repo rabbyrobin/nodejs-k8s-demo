@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest  # This will use your local runner
+    runs-on: self-hosted  # This will use your local runner
 
     steps:
       - name: Check Out Repo
