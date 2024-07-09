@@ -29,25 +29,24 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/nodejs-app:${{ github.run_number }}
 
-  deploy:
-    name: Deploy to Kubernetes
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up kubeconfig
+      - name: Deploy to Kubernetes
+        env:
+          KUBE_CONFIG_BASE64: ${{ secrets.KUBE_CONFIG }}
         run: |
-          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
-          chmod 600 $HOME/.kube/config
+          # Decode the base64 encoded kubeconfig and save it
+          echo "$KUBE_CONFIG_BASE64" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
 
-      - name: Verify Kubernetes connection
-        run: |
-          kubectl cluster-info
-          kubectl get nodes
+          # Update the image tag in deployment.yml
+          sed -i 's|image: nodejs-app:.*|image: nodejs-app:${{ github.run_number }}|' k8s/deployment.yml
 
-      - name: Deploy to K8s
-        run: |
+          # Apply Kubernetes manifests
           kubectl apply -f k8s/deployment.yml
           kubectl apply -f k8s/service.yml
           kubectl apply -f k8s/ingress.yml
+
+          # Ensure the deployment is rolled out
+          kubectl rollout status deployment/your-deployment-name
+
+          # Clean up the kubeconfig file
+          rm kubeconfig
